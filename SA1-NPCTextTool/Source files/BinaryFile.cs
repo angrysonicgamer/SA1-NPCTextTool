@@ -207,7 +207,9 @@
             writer.Dispose();
 
             Directory.CreateDirectory(createdFilesDir);
-            File.WriteAllBytes($"{createdFilesDir}\\{binFile}", output);            
+            File.WriteAllBytes($"{createdFilesDir}\\{binFile}", output);
+            DisplayMessage.Config(config);
+            DisplayMessage.FileCreated(binFile);
         }
     }
 }

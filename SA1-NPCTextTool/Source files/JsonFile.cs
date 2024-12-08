@@ -6,7 +6,7 @@ namespace SA1_NPCTextTool
 {
     public static class JsonFile
     {
-        public static void Create(string filename, JsonContents allNPCsText)
+        public static void Create(string filename, JsonContents allNPCsText, AppConfig config)
         {
             var jsonOptions = new JsonSerializerOptions()
             {
@@ -16,6 +16,8 @@ namespace SA1_NPCTextTool
             var json = JsonSerializer.Serialize(allNPCsText, jsonOptions);
 
             File.WriteAllText(filename, json);
+            DisplayMessage.Config(config);
+            DisplayMessage.TextExtracted(filename);
         }
 
         public static JsonContents Read(string filename)
