@@ -8,8 +8,7 @@
                 "Edit that json and then drag and drop it to the executable to get new NPC text file in \"New files\" directory.\n" +
                 "You can add or remove strings in any group. Each group represents a single line with multiple text blocks.\n" +
                 "Note that the NPC text file must also be in the same folder.\n" +
-                "The tool supports Windows-1251, Windows-1252 and Shift-JIS encodings. Edit AppConfig.json to set the desired encoding.\n\n" +
-                "Made by Irregular Zero.\n";
+                "The tool supports Windows-1251, Windows-1252 and Shift-JIS encodings. Edit AppConfig.json to set the desired encoding.";
             Console.WriteLine(about);
         }
 
