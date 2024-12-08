@@ -106,9 +106,9 @@
             return allNPCsText;
         }
 
-        public static void Write(string jsonFile, AppConfig config)
+        public static void Write(JsonContents jsonContents, AppConfig config)
         {
-            string name = Path.GetFileNameWithoutExtension(jsonFile);
+            string name = jsonContents.Name;
             string binFile = $"{name}.bin";
             string createdFilesDir = "New files";           
 
@@ -138,8 +138,6 @@
             reader.BaseStream.Position = 0;
             var outputFile = new List<byte>();
             outputFile.AddRange(reader.ReadBytes((int)firstTextOffset));
-
-            var jsonContents = JsonFile.Read(jsonFile);
 
             // Adding strings, calculating text pointers
 

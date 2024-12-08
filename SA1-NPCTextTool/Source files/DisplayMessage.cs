@@ -28,6 +28,21 @@
             Console.WriteLine("The file extension is not supported.");
         }
 
+        public static void WrongBinFile()
+        {
+            Console.WriteLine("It seems the file you've provided is not a Sonic Adventure NPC text file.");
+        }
+
+        public static void WrongJsonFile()
+        {
+            Console.WriteLine("It seems the json file you've provided hasn't been created by this tool.");
+        }
+
+        public static void InvalidJson()
+        {
+            Console.WriteLine("The json file you provided is invalid. Maybe you've made some mistakes editing it. Check in any json validator.");
+        }
+
         public static void FileCreated(string file)
         {
             Console.WriteLine($"File {file} has been successfully created in the \"New files\" folder!\n");
