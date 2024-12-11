@@ -207,7 +207,7 @@
             Directory.CreateDirectory(createdFilesDir);
             File.WriteAllBytes($"{createdFilesDir}\\{binFile}", output);
             DisplayMessage.Config(config);
-            DisplayMessage.FileCreated(binFile);
+            DisplayMessage.NPCFileCreated(binFile);
         }
     }
 }
