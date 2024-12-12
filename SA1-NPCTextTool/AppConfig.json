@@ -1,0 +1,14 @@
+{
+    "Info": {        
+        "Encoding": [
+            { "Value": "Windows1251",	"Description": "Standard single-byte Cyrillic encoding" },
+            { "Value": "Windows1252",	"Description": "Standard single-byte Latin encoding (used for French, German and Spanish in SA1)" },
+            { "Value": "ShiftJIS",		"Description": "Japanese encoding (used for Japanese and English in SA1)" }
+        ]
+    },
+	
+	
+    "Config": {
+        "Encoding": "Windows1252"
+    }
+}
