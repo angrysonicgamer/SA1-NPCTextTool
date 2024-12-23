@@ -27,9 +27,9 @@
 
             // Reading pointers and stuff
 
-            reader.BaseStream.Position = 4;
+            reader.SetPosition(4);
             uint flagsAndLinePtrs = reader.ReadUInt32() - baseAddress;
-            reader.BaseStream.Position = flagsAndLinePtrs;
+            reader.SetPosition(flagsAndLinePtrs);
 
             var linePointers = new List<uint>();
             var flagPointers = new List<uint>();
@@ -54,7 +54,7 @@
 
                 if (ptr != 0)
                 {
-                    reader.BaseStream.Position = ptr - baseAddress;
+                    reader.SetPosition(ptr - baseAddress);
 
                     while (true)
                     {
@@ -75,7 +75,7 @@
 
             for (int i = 0; i < linePointers.Count; i++)
             {
-                reader.BaseStream.Position = linePointers[i] - baseAddress;
+                reader.SetPosition(linePointers[i] - baseAddress);
                 int npcID = i + 1;
                 int groupCount = groupCounts[i];
                 int currentGroup = 1;
@@ -83,20 +83,18 @@
 
                 while (true)
                 {
-                    var pos = reader.BaseStream.Position;
-                    int textptr = reader.ReadInt32();
-                    if (textptr == 0)
+                    int textPtr = reader.ReadInt32();
+
+                    if (textPtr == 0)
                     {
                         currentGroup++;
                         if (currentGroup > groupCount) break;
                         groupedStrings.Add(new List<string>());
                         continue;
                     }
-
-                    reader.BaseStream.Position = textptr - baseAddress;
-                    string text = reader.ReadCString(config.Encoding).Replace("\a", "");
-                    groupedStrings.Last().Add(text);
-                    reader.BaseStream.Position = pos + 4;
+                                        
+                    string text = reader.ReadAt(textPtr - baseAddress, x => x.ReadCString(config.Encoding));
+                    groupedStrings.Last().Add(text.Replace("\a", "")); // assuming all strings would use "block" centering (text starts with \a), you can add \t to use "each line" centering
                 }
 
                 var currentNPCText = new NPCTextEntry(npcID, groupedStrings);
@@ -110,7 +108,8 @@
         {
             string name = jsonContents.Name;
             string binFile = $"{name}.bin";
-            string createdFilesDir = "New files";           
+            string createdFilesDir = "New files";
+            Directory.CreateDirectory(createdFilesDir);
 
             if (!File.Exists(binFile))
             {
@@ -123,9 +122,9 @@
             // Reading corresponding bin file and copying its beginning (flags and stuff) to a new byte array
 
             var reader = new BinaryReader(new MemoryStream(File.ReadAllBytes(binFile)));
-            reader.BaseStream.Position = 4;
+            reader.SetPosition(4);
             uint flagsAndTextPointersOffset = reader.ReadUInt32() - baseAddress;
-            reader.BaseStream.Position = flagsAndTextPointersOffset;
+            reader.SetPosition(flagsAndTextPointersOffset);
 
             while (true)
             {
@@ -135,9 +134,10 @@
             }
 
             var firstTextOffset = reader.BaseStream.Position - 4;
-            reader.BaseStream.Position = 0;
-            var outputFile = new List<byte>();
-            outputFile.AddRange(reader.ReadBytes((int)firstTextOffset));
+            reader.SetPosition(0);
+
+            var writer = new BinaryWriter(File.Create($"{createdFilesDir}\\{binFile}"));
+            writer.Write(reader.ReadBytes((int)firstTextOffset));
 
             // Adding strings, calculating text pointers
 
@@ -167,14 +167,14 @@
                 }
             }
 
-            outputFile.AddRange(cStrings);
-            uint textEnd = (uint)outputFile.Count;
+            writer.Write(cStrings.ToArray());
+            uint textEnd = (uint)writer.BaseStream.Length;
 
             // Adding text pointers
 
             foreach (var ptr in linePointers)
             {
-                outputFile.AddRange(BitConverter.GetBytes(ptr));
+                writer.Write(ptr);
             }
 
             uint totalCount = 0;
@@ -189,10 +189,6 @@
                 }
             }
 
-            // Creating a new bin file
-
-            byte[] output = outputFile.ToArray();
-            var writer = new BinaryWriter(new MemoryStream(output));
             writer.BaseStream.Position = flagsAndTextPointersOffset + 4;
 
             for (int i = 0; i < textPointers.Count; i++)
@@ -204,8 +200,6 @@
             reader.Dispose();
             writer.Dispose();
 
-            Directory.CreateDirectory(createdFilesDir);
-            File.WriteAllBytes($"{createdFilesDir}\\{binFile}", output);
             DisplayMessage.Config(config);
             DisplayMessage.NPCFileCreated(binFile);
         }
