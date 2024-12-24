@@ -3,6 +3,7 @@
     public static class BinaryFile
     {
         private static uint baseAddress;
+        private static int baseCount;
 
         private static readonly Dictionary<string, uint> baseAddresses = new()
         {
@@ -11,10 +12,18 @@
             { "past", 0xCB4A000 },
         };
 
-        private static void SetBaseAddress(string fileName)
+        private static readonly Dictionary<string, int> baseCounts = new()
+        {
+            { "ss", 36 },
+            { "mr", 5 },
+            { "past", 20 },
+        };
+
+        private static void SetBaseValues(string fileName)
         {
             string location = fileName.Substring(0, fileName.IndexOf('_')).ToLower();
             baseAddress = baseAddresses[location];
+            baseCount = baseCounts[location];
         }
                 
 
@@ -23,24 +32,22 @@
             DisplayMessage.ReadingFile(binFile);
             var source = File.ReadAllBytes(binFile);
             string name = Path.GetFileNameWithoutExtension(binFile);
-            SetBaseAddress(name);
+            SetBaseValues(name);
             var reader = new BinaryReader(new MemoryStream(source));
 
             // Reading pointers and stuff
 
-            reader.SetPosition(4);
+            int npcCount = reader.ReadInt32() + baseCount;
             uint flagsAndTextPointersOffset = reader.ReadUInt32() - baseAddress;
             reader.SetPosition(flagsAndTextPointersOffset);
 
             var linePointers = new List<uint>();
             var flagPointers = new List<uint>();
 
-            while (true)
+            for (int i = 0; i < npcCount; i++)
             {
                 uint flagsPtr = reader.ReadUInt32();
                 uint linePtr = reader.ReadUInt32();
-                if (flagsPtr > 0xCB50000) break; // pretty stupid condition LUL
-
                 linePointers.Add(linePtr);
                 flagPointers.Add(flagsPtr);
             }
@@ -118,7 +125,7 @@
                 return;
             }
 
-            SetBaseAddress(name);
+            SetBaseValues(name);
 
             // Reading corresponding bin file and copying its beginning (flags and stuff) to a new byte array
 
