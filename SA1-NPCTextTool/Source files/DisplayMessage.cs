@@ -60,9 +60,15 @@
             Wait();
         }
 
+        public static void ReadingFile(string file)
+        {
+            Console.WriteLine($"Reading file: {Path.GetFileName(file)}...\n");
+        }
+
         public static void Config(AppConfig config)
         {
-            Console.WriteLine($"Config settings:\nEncoding - {config.Encoding.EncodingName}\n");
+            Console.WriteLine($"Config settings:" +
+                $"\nEncoding - {config.Encoding.EncodingName}\n");
         }
 
 

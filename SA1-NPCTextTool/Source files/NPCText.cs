@@ -11,7 +11,7 @@ namespace SA1_NPCTextTool
             try
             {
                 var jsonContents = BinaryFile.Read(binFile, config);
-                JsonFile.Create(jsonFile, jsonContents, config);
+                JsonFile.Write(jsonFile, jsonContents, config);
             }
             catch (Exception ex)
             {

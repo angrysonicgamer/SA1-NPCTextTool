@@ -6,24 +6,25 @@ namespace SA1_NPCTextTool
 {
     public static class JsonFile
     {
-        public static void Create(string filename, JsonContents allNPCsText, AppConfig config)
+        public static JsonContents Read(string jsonFile)
+        {
+            DisplayMessage.ReadingFile(jsonFile);
+            var json = JsonNode.Parse(File.ReadAllText(jsonFile));
+            return JsonSerializer.Deserialize<JsonContents>(json);
+        }
+
+        public static void Write(string jsonFile, JsonContents allNPCsText, AppConfig config)
         {
             var jsonOptions = new JsonSerializerOptions()
             {
                 WriteIndented = true,
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
+
             var json = JsonSerializer.Serialize(allNPCsText, jsonOptions);
-
-            File.WriteAllText(filename, json);
+            File.WriteAllText(jsonFile, json);
             DisplayMessage.Config(config);
-            DisplayMessage.TextExtracted(filename);
-        }
-
-        public static JsonContents Read(string filename)
-        {
-            var json = JsonNode.Parse(File.ReadAllText(filename));
-            return JsonSerializer.Deserialize<JsonContents>(json);
+            DisplayMessage.TextExtracted(jsonFile);
         }
     }
 }

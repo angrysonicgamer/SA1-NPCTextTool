@@ -20,6 +20,7 @@
 
         public static JsonContents Read(string binFile, AppConfig config)
         {
+            DisplayMessage.ReadingFile(binFile);
             var source = File.ReadAllBytes(binFile);
             string name = Path.GetFileNameWithoutExtension(binFile);
             SetBaseAddress(name);
@@ -28,8 +29,8 @@
             // Reading pointers and stuff
 
             reader.SetPosition(4);
-            uint flagsAndLinePtrs = reader.ReadUInt32() - baseAddress;
-            reader.SetPosition(flagsAndLinePtrs);
+            uint flagsAndTextPointersOffset = reader.ReadUInt32() - baseAddress;
+            reader.SetPosition(flagsAndTextPointersOffset);
 
             var linePointers = new List<uint>();
             var flagPointers = new List<uint>();
@@ -124,20 +125,11 @@
             var reader = new BinaryReader(new MemoryStream(File.ReadAllBytes(binFile)));
             reader.SetPosition(4);
             uint flagsAndTextPointersOffset = reader.ReadUInt32() - baseAddress;
-            reader.SetPosition(flagsAndTextPointersOffset);
-
-            while (true)
-            {
-                uint flagsPtr = reader.ReadUInt32();
-                if (flagsPtr > 0xCB50000) break; // pretty stupid condition again LUL
-                reader.BaseStream.Position += 4;
-            }
-
-            var firstTextOffset = reader.BaseStream.Position - 4;
+            var firstTextOffset = flagsAndTextPointersOffset + jsonContents.NPCText.Count * 2 * sizeof(int);
             reader.SetPosition(0);
 
             var writer = new BinaryWriter(File.Create($"{createdFilesDir}\\{binFile}"));
-            writer.Write(reader.ReadBytes((int)firstTextOffset));
+            writer.Write(reader.ReadBytes((int)firstTextOffset)); // copying source file contents up to first text strings
 
             // Adding strings, calculating text pointers
 
