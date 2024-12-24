@@ -6,14 +6,14 @@ namespace SA1_NPCTextTool
 {
     public static class JsonFile
     {
-        public static JsonContents Read(string jsonFile)
+        public static NPCTextFile Read(string jsonFile)
         {
             DisplayMessage.ReadingFile(jsonFile);
             var json = JsonNode.Parse(File.ReadAllText(jsonFile));
-            return JsonSerializer.Deserialize<JsonContents>(json);
+            return JsonSerializer.Deserialize<NPCTextFile>(json);
         }
 
-        public static void Write(string jsonFile, JsonContents allNPCsText, AppConfig config)
+        public static void Write(string jsonFile, NPCTextFile allNPCsText, AppConfig config)
         {
             var jsonOptions = new JsonSerializerOptions()
             {

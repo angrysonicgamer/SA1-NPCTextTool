@@ -1,6 +1,4 @@
-﻿using System.Net.Http.Json;
-
-namespace SA1_NPCTextTool
+﻿namespace SA1_NPCTextTool
 {
     public static class NPCText
     {
@@ -22,7 +20,7 @@ namespace SA1_NPCTextTool
         public static void Import(string jsonFile, AppConfig config)
         {
             string binFile = $"{Path.GetFileNameWithoutExtension(jsonFile)}.bin";
-            JsonContents jsonContents = null;
+            NPCTextFile jsonContents = null;
 
             try
             {

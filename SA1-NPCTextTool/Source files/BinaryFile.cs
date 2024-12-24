@@ -27,92 +27,30 @@
         }
                 
 
-        public static JsonContents Read(string binFile, AppConfig config)
+        public static NPCTextFile Read(string binFile, AppConfig config)
         {
             DisplayMessage.ReadingFile(binFile);
             var source = File.ReadAllBytes(binFile);
             string name = Path.GetFileNameWithoutExtension(binFile);
             SetBaseValues(name);
+
             var reader = new BinaryReader(new MemoryStream(source));
-
-            // Reading pointers and stuff
-
             int npcCount = reader.ReadInt32() + baseCount;
             uint flagsAndTextPointersOffset = reader.ReadUInt32() - baseAddress;
             reader.SetPosition(flagsAndTextPointersOffset);
-
-            var linePointers = new List<uint>();
-            var flagPointers = new List<uint>();
+            var allNPCsText = new NPCTextFile(name, new List<NPCTextEntry>());
 
             for (int i = 0; i < npcCount; i++)
             {
-                uint flagsPtr = reader.ReadUInt32();
-                uint linePtr = reader.ReadUInt32();
-                linePointers.Add(linePtr);
-                flagPointers.Add(flagsPtr);
-            }
-
-            var groupCounts = new List<int>();
-
-            foreach (var ptr in flagPointers)
-            {
-                int groupCount = 1;
-                short newGroupFlag = -2;
-                short endFlag = -1;
-
-                if (ptr != 0)
-                {
-                    reader.SetPosition(ptr - baseAddress);
-
-                    while (true)
-                    {
-                        short flagtype = reader.ReadInt16();
-                        if (flagtype == endFlag) break;
-                        if (flagtype == newGroupFlag)
-                            groupCount++;
-                    }
-                }
-
-                groupCounts.Add(groupCount);
-            }
-
-            // Reading text
-
-            var allNPCsText = new JsonContents(name, new List<NPCTextEntry>());
-            var npcText = new List<NPCTextEntry>();
-
-            for (int i = 0; i < linePointers.Count; i++)
-            {
-                reader.SetPosition(linePointers[i] - baseAddress);
-                int npcID = i + 1;
-                int groupCount = groupCounts[i];
-                int currentGroup = 1;
-                var groupedStrings = new List<List<string>>() { new List<string>() };
-
-                while (true)
-                {
-                    int textPtr = reader.ReadInt32();
-
-                    if (textPtr == 0)
-                    {
-                        currentGroup++;
-                        if (currentGroup > groupCount) break;
-                        groupedStrings.Add(new List<string>());
-                        continue;
-                    }
-                                        
-                    string text = reader.ReadAt(textPtr - baseAddress, x => x.ReadCString(config.Encoding));
-                    groupedStrings.Last().Add(text.Replace("\a", "")); // assuming all strings would use "block" centering (text starts with \a), you can add \t to use "each line" centering
-                }
-
-                var currentNPCText = new NPCTextEntry(npcID, groupedStrings);
-                allNPCsText.NPCText.Add(currentNPCText);
+                var entry = new NPCTextEntry();
+                entry.Read(reader, config, baseAddress);
+                allNPCsText.NPCText.Add(entry);
             }
 
             return allNPCsText;
         }
 
-        public static void Write(JsonContents jsonContents, AppConfig config)
+        public static void Write(NPCTextFile jsonContents, AppConfig config)
         {
             string name = jsonContents.Name;
             string binFile = $"{name}.bin";
