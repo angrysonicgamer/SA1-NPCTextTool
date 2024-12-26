@@ -65,7 +65,7 @@
 
             SetBaseValues(name);
 
-            // Reading corresponding bin file and copying its beginning (flags and stuff) to a new byte array
+            // Reading corresponding bin file and copying its beginning (flags and stuff)
 
             var reader = new BinaryReader(new MemoryStream(File.ReadAllBytes(binFile)));
             reader.SetPosition(4);
@@ -74,11 +74,10 @@
             reader.SetPosition(0);
 
             var writer = new BinaryWriter(File.Create($"{createdFilesDir}\\{binFile}"));
-            writer.Write(reader.ReadBytes((int)firstTextOffset)); // copying source file contents up to first text strings
+            writer.Write(reader.ReadBytes((int)firstTextOffset));
 
             // Adding strings, calculating text pointers
 
-            var cStrings = new List<byte>();
             var linePointers = new List<uint>();
             var textPointers = new List<uint>();
 
@@ -89,25 +88,23 @@
                     foreach (var str in group)
                     {
                         string text = str.StartsWith('\t') ? str : "\a" + str;
-                        var textBytes = new List<byte>();
-                        textBytes.AddRange(config.Encoding.GetBytes(text));
-                        textBytes.Add(0);
-                        int extra = textBytes.Count % 4;
-                        textBytes.AddRange(new byte[(4 - extra) % 4]);
-                        cStrings.AddRange(textBytes);
+                        writer.Write(config.Encoding.GetBytes(text));
+                        writer.Write((byte)0);
+                        int byteCount = config.Encoding.GetByteCount(text);
+                        int extraBytes = (4 - byteCount % 4) % 4;           // any text would begin from an offset that is multiple of 4
+                        writer.Write(new byte[extraBytes]);
 
                         linePointers.Add((uint)firstTextOffset + baseAddress);
-                        firstTextOffset += textBytes.Count;
+                        firstTextOffset += byteCount + 1 + extraBytes;
                     }
 
                     linePointers.Add(0);
                 }
             }
 
-            writer.Write(cStrings.ToArray());
             uint textEnd = (uint)writer.BaseStream.Length;
 
-            // Adding text pointers
+            // Writing text pointers
 
             foreach (var ptr in linePointers)
             {
