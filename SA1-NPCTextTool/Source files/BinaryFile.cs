@@ -50,9 +50,9 @@
             return allNPCsText;
         }
 
-        public static void Write(NPCTextFile jsonContents, AppConfig config)
+        public static void Write(NPCTextFile data, AppConfig config)
         {
-            string name = jsonContents.Name;
+            string name = data.Name;
             string binFile = $"{name}.bin";
             string createdFilesDir = "New files";
             Directory.CreateDirectory(createdFilesDir);
@@ -70,18 +70,18 @@
             var reader = new BinaryReader(new MemoryStream(File.ReadAllBytes(binFile)));
             reader.SetPosition(4);
             uint flagsAndTextPointersOffset = reader.ReadUInt32() - baseAddress;
-            var firstTextOffset = flagsAndTextPointersOffset + jsonContents.NPCText.Count * 2 * sizeof(int);
+            var firstTextOffset = flagsAndTextPointersOffset + data.NPCText.Count * 2 * sizeof(int);
             reader.SetPosition(0);
 
             var writer = new BinaryWriter(File.Create($"{createdFilesDir}\\{binFile}"));
             writer.Write(reader.ReadBytes((int)firstTextOffset));
 
-            // Adding strings, calculating text pointers
+            // Writing strings, calculating text pointers
 
             var linePointers = new List<uint>();
             var textPointers = new List<uint>();
 
-            foreach (var npcID in jsonContents.NPCText)
+            foreach (var npcID in data.NPCText)
             {
                 foreach (var group in npcID.Strings)
                 {
@@ -93,7 +93,7 @@
                         int byteCount = config.Encoding.GetByteCount(text);
                         int extraBytes = (4 - byteCount % 4) % 4;           // any text would begin from an offset that is multiple of 4
                         writer.Write(new byte[extraBytes]);
-
+                                                
                         linePointers.Add((uint)firstTextOffset + baseAddress);
                         firstTextOffset += byteCount + 1 + extraBytes;
                     }
@@ -113,9 +113,9 @@
 
             uint totalCount = 0;
 
-            foreach (var npcID in jsonContents.NPCText)
+            foreach (var npcID in data.NPCText)
             {
-                textPointers.Add(textEnd + 4 * totalCount + baseAddress);
+                textPointers.Add(textEnd + sizeof(int) * totalCount + baseAddress);
 
                 foreach (var group in npcID.Strings)
                 {
@@ -123,12 +123,12 @@
                 }
             }
 
-            writer.BaseStream.Position = flagsAndTextPointersOffset + 4;
+            writer.SetPosition(flagsAndTextPointersOffset + sizeof(int));
 
             for (int i = 0; i < textPointers.Count; i++)
             {
                 writer.Write(textPointers[i]);
-                writer.BaseStream.Position += 4;
+                writer.BaseStream.Position += sizeof(int);
             }
 
             reader.Dispose();

@@ -4,11 +4,20 @@
     {
         public static void AboutTool()
         {
-            string about = "Drag and drop an NPC text file to the executable to extract text to a json file.\n" +
-                "Edit that json and then drag and drop it to the executable to get new NPC text file in \"New files\" directory.\n\n" +
-                "You can add or remove strings in any group. Each group represents a single line with multiple text blocks.\n" +
-                "Note that the NPC text file must also be in the same folder.\n\n" +
-                "The tool supports Windows-1251, Windows-1252 and Shift-JIS encodings. Edit AppConfig.json to set the desired encoding.\n";
+            string about = "This is a tool to work with town NPC text in Sonic Adventure (any version).\n\n" +
+                "- Usage -\n" +
+                "Drag and drop an NPC text file to the executable to extract text to a json file.\n" +
+                "Edit that json and then drag and drop it to the executable to get new NPC text file in \"New files\" subfolder.\n" +
+                "Note that the NPC text file must also be in the same folder as json.\n\n" +
+                "- CMD usage -\n" +
+                "SA1-NPCTextTool filename\n\n" +
+                "- Editing extracted data -\n" +
+                "You can add or remove strings in any group.\n" +
+                "Each group represents a single line with multiple text blocks.\n" +
+                "The tool assumes all text strings would use \"block\" centering method (an imported text will start with '\\a').\n" +
+                "You can use \"each line\" centering by adding '\\t' to the beginning of a string in a json file.\n\n" +
+                "The tool supports Windows-1251, Windows-1252 and Shift-JIS encodings.\n" +
+                "Edit AppConfig.json to set the desired encoding.\n";
             Console.WriteLine(about);
             Wait();
         }

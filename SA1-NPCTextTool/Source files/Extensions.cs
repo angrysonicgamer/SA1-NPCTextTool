@@ -48,5 +48,13 @@ namespace SA1_NPCTextTool
 
             return encoding.GetString(textBytes.ToArray());
         }
+
+
+        // BinaryWriter
+
+        public static void SetPosition(this BinaryWriter writer, long position)
+        {
+            writer.BaseStream.Position = position;
+        }
     }
 }
